@@ -1,12 +1,10 @@
-# This Python 3 environment comes with many helpful analytics libraries installed
-# It is defined by the kaggle/python docker image: https://github.com/kaggle/docker-python
-# For example, here's several helpful packages to load in
+# *coding=utf-8* 
 
 import numpy as np
 from sklearn.base import BaseEstimator,TransformerMixin, ClassifierMixin
 from sklearn.preprocessing import LabelEncoder
 import xgboost as xgb
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import pandas as pd  
 from sklearn.linear_model import ElasticNetCV, LassoLarsCV
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.pipeline import make_pipeline, make_union
@@ -18,8 +16,6 @@ from sklearn.random_projection import SparseRandomProjection
 from sklearn.decomposition import PCA, FastICA
 from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics import r2_score
-
-
 
 class StackingEstimator(BaseEstimator, TransformerMixin):
 
@@ -42,8 +38,8 @@ class StackingEstimator(BaseEstimator, TransformerMixin):
         return X_transformed
 
 
-train = pd.read_csv('./train.csv')
-test = pd.read_csv('./test.csv')
+train = pd.read_csv('../input/train.csv')
+test = pd.read_csv('../input/test.csv')
 
 for c in train.columns:
     if train[c].dtype == 'object':
@@ -51,8 +47,6 @@ for c in train.columns:
         lbl.fit(list(train[c].values) + list(test[c].values))
         train[c] = lbl.transform(list(train[c].values))
         test[c] = lbl.transform(list(test[c].values))
-
-
 
 n_comp = 12
 
@@ -124,7 +118,6 @@ xgb_params = {
     'base_score': y_mean, # base prediction = mean(target)
     'silent': 1
 }
-# NOTE: Make sure that the class is labeled 'class' in the data file
 
 dtrain = xgb.DMatrix(train.drop('y', axis=1), y_train)
 dtest = xgb.DMatrix(test)
@@ -152,7 +145,7 @@ results = stacked_pipeline.predict(finaltestset)
 print('R2 score on train data:')
 print(r2_score(y_train,stacked_pipeline.predict(finaltrainset)*0.2855 + model.predict(dtrain)*0.7145))
 
-'''Average the preditionon test data  of both models then save it on a csv file'''
+'''Average the preditionon test data  of both models '''
 
 sub = pd.DataFrame()
 sub['ID'] = id_test
@@ -160,4 +153,4 @@ sub['y'] = y_pred*0.75 + results*0.25
 sub.to_csv('stacked-models.csv', index=False)
 
 
-# Any results you write to the current directory are saved as output.
+ 
